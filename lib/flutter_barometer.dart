@@ -16,11 +16,11 @@ FlutterBarometerEvent _listToBarometerEvent(List<double> list) {
   return FlutterBarometerEvent(list[0]);
 }
 
-Stream<FlutterBarometerEvent> _flutterBarometerEventss;
+Stream<FlutterBarometerEvent>? _flutterBarometerEventss;
 
 /// A broadcast stream of events from the device barometer.
 Stream<FlutterBarometerEvent> get flutterBarometerEvents {
-  Stream<FlutterBarometerEvent> flutterBarometerEventss =
+  Stream<FlutterBarometerEvent>? flutterBarometerEventss =
       _flutterBarometerEventss;
   if (flutterBarometerEventss == null) {
     flutterBarometerEventss =

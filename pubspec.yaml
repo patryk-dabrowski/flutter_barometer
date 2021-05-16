@@ -1,6 +1,6 @@
 name: flutter_barometer
 description: A new flutter plugin project.
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/patryk-dabrowski/flutter_barometer
 
 environment:
