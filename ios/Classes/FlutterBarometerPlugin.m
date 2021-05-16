@@ -1,20 +1,41 @@
 #import "FlutterBarometerPlugin.h"
+#import <CoreMotion/CoreMotion.h>
 
 @implementation FlutterBarometerPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"flutter_barometer"
-            binaryMessenger:[registrar messenger]];
-  FlutterBarometerPlugin* instance = [[FlutterBarometerPlugin alloc] init];
-  [registrar addMethodCallDelegate:instance channel:channel];
+    BarometerStreamHandler* barometerStreamHandler =
+        [[BarometerStreamHandler alloc] init];
+    FlutterEventChannel* barometerChannel =
+        [FlutterEventChannel eventChannelWithName:@"sensors/barometer"
+                                  binaryMessenger:[registrar messenger]];
+    [barometerChannel setStreamHandler:barometerStreamHandler];
 }
 
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"getPlatformVersion" isEqualToString:call.method]) {
-    result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  } else {
-    result(FlutterMethodNotImplemented);
-  }
+@end
+
+CMAltimeter* _altimeterManager;
+
+
+@implementation BarometerStreamHandler
+
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+    if (!_altimeterManager) {
+      _altimeterManager = [[CMAltimeter alloc] init];
+    }
+  [_altimeterManager
+      startRelativeAltitudeUpdatesToQueue:[[NSOperationQueue alloc] init]
+      withHandler:^(CMAltitudeData* _Nullable barometerData, NSError* _Nullable error) {
+      Float64 value = barometerData.pressure.floatValue * 10;
+      NSMutableData* event = [NSMutableData dataWithCapacity:sizeof(Float64)];
+      [event appendBytes:&value length:sizeof(Float64)];
+      eventSink([FlutterStandardTypedData typedDataWithFloat64:event]);
+  }];
+  return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+  [_altimeterManager stopRelativeAltitudeUpdates];
+  return nil;
 }
 
 @end
